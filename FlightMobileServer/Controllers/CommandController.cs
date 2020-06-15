@@ -32,6 +32,11 @@ namespace FlightMobileAppServer.Controllers
 
            // byte[] returnValue = await manager.SendRequest("http://localhost:8080");
             byte[] returnValue = await manager.SendRequest("http://localhost:5000");
+            // Error accured
+            if (returnValue == null)
+            {
+                return null;
+            }
             return File(returnValue, "image/jpg");
             //  return Ok("screenshot!!");
         }
@@ -47,6 +52,14 @@ namespace FlightMobileAppServer.Controllers
                 return BadRequest(setInfo.ErrorMessage);
             }
             return Ok();
+        }
+
+        // POST: disconnect
+        [Route("disconnect")]
+        [HttpPost]
+        public void Disconnect()
+        {
+            manager.Disconnect();
         }
 
     }

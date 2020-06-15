@@ -10,5 +10,6 @@ namespace FlightMobileAppServer.Model
     {
         SetInfo SetSimulator(Command command);
         Task<byte[]> SendRequest(string url);
+        void Disconnect();
     }
 }

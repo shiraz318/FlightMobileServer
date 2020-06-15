@@ -170,7 +170,7 @@ namespace FlightMobileAppServer.Model
             }
              if (Error.Equals(""))
              {
-            ValidateSet(message);
+             ValidateSet(message);
              }
             mutex.ReleaseMutex();
         }
