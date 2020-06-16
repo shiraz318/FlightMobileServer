@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FlightMobileAppServer.Model;
+using FlightMobileServer.Model;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -29,6 +30,7 @@ namespace FlightMobileAppServer
         {
             services.AddControllers();
             services.AddSingleton<IManager, Manager>();
+            services.AddSingleton<IFlightGearClient, FlightGearClient>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -12,18 +12,18 @@ namespace FlightMobileAppServer.Model
         [Required]
         [Range(-1.0, 1.0)]
         [JsonPropertyName("rudder")]
-        public float Rudder { get; set; }
+        public double Rudder { get; set; }
         [Required]
         [Range(0.0, 1.0)]
         [JsonPropertyName("throttle")]
-        public float Throttle { get; set; }
+        public double Throttle { get; set; }
         [Required]
         [Range(-1.0, 1.0)]
         [JsonPropertyName("aileron")]
-        public float Aileron { get; set; }
+        public double Aileron { get; set; }
         [Required]
         [Range(-1.0, 1.0)]
         [JsonPropertyName("elevator")]
-        public float Elevator { get; set; }
+        public double Elevator { get; set; }
     }
 }

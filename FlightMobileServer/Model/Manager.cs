@@ -57,7 +57,8 @@ namespace FlightMobileAppServer.Model
         private Queue<SetMessage> setMessages = new Queue<SetMessage> { };
         private Mutex mutex;
         private Dictionary<string, string> pathMap = new Dictionary<string, string>();
-        
+
+       
         // Properties.
         public string Error { get; set; }
         public string TimeOutError { get; set; }
@@ -149,7 +150,13 @@ namespace FlightMobileAppServer.Model
             Write(message);
             // Read from simulator.
             string returnValue = Read();
-            float actualReturnValue = FromReadReturnToFloat(returnValue);
+            if (returnValue.CompareTo("E") == 0 || returnValue.CompareTo("T") == 0)
+            {
+                //Error = ConnectionFaultedErrorMessage;
+                return;
+            }
+
+             float actualReturnValue = FromReadReturnToFloat(returnValue);
             // Check if the return value is the same as the value in the message and update the Error propery accordingly.
             // This is not the value we set.
             if (actualReturnValue != value)
@@ -211,14 +218,17 @@ namespace FlightMobileAppServer.Model
                 if (e.Message.Contains(TimeOutMessage))
                 {
                     TimeOutError = "Server is slow";
+                    return "T";
+                    //Error = "Server is slow";
                 }
                 // Connection error.
                 else
                 {
                     Error = ConnectionFaultedErrorMessage;
                     stop = true;
+                    return "E";
                 }
-                return "";
+                
             }
         }
 
@@ -250,10 +260,10 @@ namespace FlightMobileAppServer.Model
 
         public SetInfo SetSimulator(Command command)
         {
-            InsetMessageToQueue(command.Aileron, "aileron");
-            InsetMessageToQueue(command.Rudder, "rudder");
-            InsetMessageToQueue(command.Throttle, "throttle");
-            InsetMessageToQueue(command.Elevator, "elevator");
+            //InsetMessageToQueue(command.Aileron, "aileron");
+            //InsetMessageToQueue(command.Rudder, "rudder");
+            //InsetMessageToQueue(command.Throttle, "throttle");
+            //InsetMessageToQueue(command.Elevator, "elevator");
 
             if (Error.CompareTo("") == 0)
             {
@@ -283,6 +293,10 @@ namespace FlightMobileAppServer.Model
             }
 
         }
+
+
+
+
 
 
     }

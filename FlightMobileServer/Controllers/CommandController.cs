@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using static System.Net.Mime.MediaTypeNames;
 using System.Web;
+using FlightMobileServer.Model;
 
 namespace FlightMobileAppServer.Controllers
 {
@@ -16,10 +17,12 @@ namespace FlightMobileAppServer.Controllers
     public class CommandController : ControllerBase
     {
         private IManager manager;
+        private IFlightGearClient flightGearClient;
 
-        public CommandController(IManager manager)
+        public CommandController(IFlightGearClient flightGearClient)
         {
-            this.manager = manager;
+           // this.manager = manager;
+            this.flightGearClient = flightGearClient;
         }
 
         // GET: screenshot
@@ -31,7 +34,7 @@ namespace FlightMobileAppServer.Controllers
             //return "ok";
 
            // byte[] returnValue = await manager.SendRequest("http://localhost:8080");
-            byte[] returnValue = await manager.SendRequest("http://localhost:5000");
+            byte[] returnValue = await flightGearClient.SendRequest("http://localhost:5000");
             // Error accured
             if (returnValue == null)
             {
@@ -44,14 +47,25 @@ namespace FlightMobileAppServer.Controllers
         // POST: api/Command
         [Route("api/Command")]
         [HttpPost]
-        public ActionResult<string> Post([FromBody] Command command)
+        public ActionResult Post([FromBody] Command command)
         {
-            SetInfo setInfo = manager.SetSimulator(command);
-            if (setInfo.IsErrorHappend)
+            Result res = flightGearClient.Execute(command).Result;
+            if (res.Equals(Result.Ok))
             {
-                return BadRequest(setInfo.ErrorMessage);
+                return Ok();
             }
-            return Ok();
+            if (res.Equals(Result.Error))
+            {
+                return NotFound();
+            }
+            return BadRequest();
+         
+            //SetInfo setInfo = manager.SetSimulator(command);
+            //if (setInfo.IsErrorHappend)
+            //{
+            //    return BadRequest();
+            //}
+            //return Ok();
         }
 
         // POST: disconnect
