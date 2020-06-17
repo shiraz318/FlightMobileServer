@@ -47,9 +47,9 @@ namespace FlightMobileAppServer.Controllers
         // POST: api/Command
         [Route("api/Command")]
         [HttpPost]
-        public ActionResult Post([FromBody] Command command)
+        public async Task<ActionResult> Post([FromBody] Command command)
         {
-            Result res = flightGearClient.Execute(command).Result;
+            Result res = await flightGearClient.Execute(command);
             if (res.Equals(Result.Ok))
             {
                 return Ok();
