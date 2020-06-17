@@ -28,6 +28,7 @@ namespace FlightMobileServer.Model
         private const string Elevator = "elevator";
         private const string Throttle = "throttle";
         private const string Rudder = "rudder";
+        private bool isConnected = false;
 
         public FlightGearClient()
         {
@@ -38,12 +39,18 @@ namespace FlightMobileServer.Model
             pathMap.Add(Rudder, "/controls/flight/rudder");
             pathMap.Add(Elevator, "/controls/flight/elevator");
             Error = "";
+            isConnected = false;
             Start();
         }
 
         public Task<Result> Execute(Command command)
         {
             var asyncCommand = new AsyncCommand(command);
+            if (!isConnected)
+            {
+                asyncCommand.Completion.SetResult(Result.Error);
+                return asyncCommand.Task;
+            }
             queue.Add(asyncCommand);
             return asyncCommand.Task;
         }
@@ -57,11 +64,12 @@ namespace FlightMobileServer.Model
                 client.Connect("127.0.0.1", 5403);
                 // flight gear.
                 // client.Connect("127.0.0.1", 5402);
-            }
-            catch (Exception)
+            }catch(Exception)
             {
+                isConnected = false;
                 return;
             }
+            isConnected = true;
             stream = client.GetStream();
             Write("data\n");
 
@@ -247,7 +255,7 @@ namespace FlightMobileServer.Model
             {
                 string command = url + "/screenshot";
                 using var client = new HttpClient();
-                TimeSpan timeout = new TimeSpan(0, 0, 0, 50);
+                TimeSpan timeout = new TimeSpan(0, 0, 0, 10);
                 client.Timeout = timeout;
                 HttpResponseMessage responseMessage = await client.GetAsync(command);
                 byte[] content = await responseMessage.Content.ReadAsByteArrayAsync();
