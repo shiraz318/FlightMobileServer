@@ -29,11 +29,7 @@ namespace FlightMobileAppServer.Controllers
         [Route("screenshot")]
         [HttpGet]
         public async Task<FileContentResult> Get()
-       // public async Task<string> Get()
         {
-            //return "ok";
-
-           // byte[] returnValue = await manager.SendRequest("http://localhost:8080");
             byte[] returnValue = await flightGearClient.SendRequest("http://localhost:5000");
             // Error accured
             if (returnValue == null)
@@ -41,7 +37,6 @@ namespace FlightMobileAppServer.Controllers
                 return null;
             }
             return File(returnValue, "image/jpg");
-            //  return Ok("screenshot!!");
         }
 
         // POST: api/Command
@@ -59,13 +54,6 @@ namespace FlightMobileAppServer.Controllers
                 return NotFound();
             }
             return BadRequest();
-         
-            //SetInfo setInfo = manager.SetSimulator(command);
-            //if (setInfo.IsErrorHappend)
-            //{
-            //    return BadRequest();
-            //}
-            //return Ok();
         }
 
         // POST: disconnect
