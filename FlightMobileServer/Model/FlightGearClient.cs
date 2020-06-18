@@ -10,32 +10,42 @@ using System.Threading.Tasks;
 
 namespace FlightMobileServer.Model
 {
+    public enum Values { AileronE = 0, ElevatorE = 1, RudderE = 2, ThrorrleE = 3 }
+
     public class FlightGearClient: IFlightGearClient
     {
+        // Consts.
+        private const string Aileron = "aileron";
+        private const string Elevator = "elevator";
+        private const string Throttle = "throttle";
+        private const string Rudder = "rudder";
         private const string TimeOutMessage = "A connection attempt failed because the connected" +
             " party did not properly respond after a period of time, or" +
             " established connection failed because connected host has failed to respond.";
         private const string ConnectionFaultedErrorMessage = "Connection faulted Error";
+        private const int AileronE = (int)Values.AileronE;
+        private const int ElevatorE = (int)Values.ElevatorE;
+        private const int RudderE = (int)Values.RudderE;
+        private const int ThrottleE = (int)Values.ThrorrleE;
 
         private readonly BlockingCollection<AsyncCommand> queue;
         private readonly TcpClient client;
         private NetworkStream stream;
         private ServerData serverData;
+        private bool isConnected = false;
+        private Dictionary<string, string> pathMap = new Dictionary<string, string>();
 
+        // Properties.
         public string Error { get; set; }
         public string TimeOutError { get; set; }
-        private Dictionary<string, string> pathMap = new Dictionary<string, string>();
-        private const string Aileron = "aileron";
-        private const string Elevator = "elevator";
-        private const string Throttle = "throttle";
-        private const string Rudder = "rudder";
-        private bool isConnected = false;
 
+        // Constractor.
         public FlightGearClient(IOptions<ServerData> o)
         {
             queue = new BlockingCollection<AsyncCommand>();
             client = new TcpClient();
             serverData = o.Value;
+            // Initialize the pathMap.
             pathMap.Add(Aileron, "/controls/flight/aileron");
             pathMap.Add(Throttle, "/controls/engines/current-engine/throttle");
             pathMap.Add(Rudder, "/controls/flight/rudder");
@@ -45,9 +55,11 @@ namespace FlightMobileServer.Model
             Start();
         }
 
+        // Enter a given command to the queue if there is a connection to the simulator.
         public Task<Result> Execute(Command command)
         {
             var asyncCommand = new AsyncCommand(command);
+            // No connection with the simulator.
             if (!isConnected)
             {
                 asyncCommand.Completion.SetResult(Result.Error);
@@ -57,8 +69,8 @@ namespace FlightMobileServer.Model
             return asyncCommand.Task;
         }
 
-
-        public void ProcessCommand()
+        // Connect to the simulator.
+        private void ConnectToSimulator()
         {
             try
             {
@@ -66,19 +78,33 @@ namespace FlightMobileServer.Model
                 string ip = serverData.Ip;
                 int port = serverData.Port;
                 client.Connect(ip, port);
-            }catch(Exception)
+                isConnected = true;
+                stream = client.GetStream();
+            }
+            // Connection failed.
+            catch (Exception)
             {
                 isConnected = false;
                 return;
             }
-            isConnected = true;
-            stream = client.GetStream();
-            Write("data\n");
+        }
 
+        // Excecute commands from the queue.
+        public void ProcessCommand()
+        {
+            ConnectToSimulator();
+            if (!isConnected)
+            {
+                return;
+            }
+            // To get the information in numbers.
+            Write("data\n");
+            // Go through the commands in the queue
             foreach (AsyncCommand command in queue.GetConsumingEnumerable())
             {
                 string setMessage = CreateSetMessage(command);
                 Result resWrite = Write(setMessage);
+                // Error accured while whriting to the simulator.
                 if (resWrite.Equals(Result.Error))
                 {
                     command.Completion.SetResult(resWrite);
@@ -86,18 +112,20 @@ namespace FlightMobileServer.Model
                 }
                 string getMessage = CreateGetMessage();
                 Write(getMessage);
-                 string returnValue = Read();
+                string returnValue = Read();
+                // Error or Timeout while reading from the simulator.
                 if(returnValue.Equals("E") || returnValue.Equals("T"))
                 {
                     command.Completion.SetResult(Result.Error);
                     continue;
                 }
+                // Check if the values of the simualtor are simialer to the values we set.
                 Result res = CheckValidation(command.Command, returnValue);
                 command.Completion.SetResult(res);
             }
         }
 
-
+        // Create a get message to get the values of the commands properties.
         private string CreateGetMessage()
         {
             string pathRudder = pathMap[Rudder];
@@ -114,33 +142,34 @@ namespace FlightMobileServer.Model
             return message;
         }
 
+        // Generate a command object from the given string array.
         private Command setActualCommand(string[] actualValues)
         {
             Command command = new Command();
-            if (Double.TryParse(actualValues[0], out double result1))
+            if (Double.TryParse(actualValues[AileronE], out double actualAileron))
             {
-                command.Aileron = result1;
+                command.Aileron = actualAileron;
             } else
             {
                 return null;
             }
-            if (Double.TryParse(actualValues[1], out double result2))
+            if (Double.TryParse(actualValues[ElevatorE], out double actualElevator))
             {
-                command.Elevator = result2;
+                command.Elevator = actualElevator;
             } else
             {
                 return null;
             }
-            if (Double.TryParse(actualValues[2], out double result3))
+            if (Double.TryParse(actualValues[RudderE], out double actualRudder))
             {
-                command.Rudder = result3;
+                command.Rudder = actualRudder;
             } else
             {
                 return null;
             }
-            if (Double.TryParse(actualValues[3], out double result4))
+            if (Double.TryParse(actualValues[ThrottleE], out double actualThrottle))
             {
-                command.Throttle = result4;
+                command.Throttle = actualThrottle;
             } else
             {
                 return null;
@@ -148,13 +177,14 @@ namespace FlightMobileServer.Model
             return command;
         }
 
+        // Check if the given return value is similar to the values of the given command.
         private Result CheckValidation(Command command, string returnValue)
         {
             double expectedAileron = command.Aileron;
             double expectedElevator = command.Elevator;
             double expectedRudder = command.Rudder;
             double expectedThrottle = command.Throttle;
-
+            // Separate returnValue by '\n'
             string[] actualValues = returnValue.Split('\n'); 
             if (actualValues.Length != 5)
             {
@@ -165,6 +195,7 @@ namespace FlightMobileServer.Model
             {
                 return Result.NotOk;
             }
+            // If at least one value is different from the expected value - this is not ok.
             if (!actualCommand.Aileron.Equals(expectedAileron)
                 || !actualCommand.Elevator.Equals(expectedElevator)
                 || !actualCommand.Rudder.Equals(expectedRudder)
@@ -175,6 +206,7 @@ namespace FlightMobileServer.Model
             return Result.Ok;
         }
 
+        // Create a set message to set the values of the simualtor by the given command values.
         private string CreateSetMessage(AsyncCommand command)
         {
 
@@ -197,11 +229,13 @@ namespace FlightMobileServer.Model
             return message;
         }
 
+        // Start communication with the simulator.
         public void Start()
         {
             Task.Factory.StartNew(ProcessCommand);
         }
 
+        // White the given message to the simulator.
         private Result Write(string message)
         {
             try
@@ -217,11 +251,10 @@ namespace FlightMobileServer.Model
                 string messageerror = e.Message;
                 Error = ConnectionFaultedErrorMessage;
                 return Result.Error;
-               // stop = true;
             }
         }
 
-
+        // Read data from the simulator.
         private string Read()
         {
             try
@@ -250,6 +283,8 @@ namespace FlightMobileServer.Model
                 }
             }
         }
+
+        // Send http request to get the screenshot from the simulator.
         public async Task<byte[]> SendRequest()
         {
             try
@@ -264,7 +299,7 @@ namespace FlightMobileServer.Model
 
                 return content;
             }
-            // Server did not responsed in 50 seconds.
+            // Server did not responsed in 10 seconds.
             catch (Exception t)
             {
                 string g = t.Message;
@@ -272,7 +307,6 @@ namespace FlightMobileServer.Model
             }
 
         }
-
 
     }
 }

@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using FlightMobileAppServer.Model;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using static System.Net.Mime.MediaTypeNames;
-using System.Web;
 using FlightMobileServer.Model;
 
 namespace FlightMobileAppServer.Controllers
@@ -19,6 +12,7 @@ namespace FlightMobileAppServer.Controllers
        
         private IFlightGearClient flightGearClient;
 
+        // Constractor.
         public CommandController(IFlightGearClient flightGearClient)
         {
             this.flightGearClient = flightGearClient;
@@ -27,6 +21,7 @@ namespace FlightMobileAppServer.Controllers
         // GET: screenshot
         [Route("screenshot")]
         [HttpGet]
+        // Return an FileContentResult of image or NotFound() if error accured.
         public async Task<IActionResult> Get()
         {
             byte[] returnValue = await flightGearClient.SendRequest();
@@ -41,6 +36,7 @@ namespace FlightMobileAppServer.Controllers
         // POST: api/Command
         [Route("api/Command")]
         [HttpPost]
+        // Update the simulator with the given command values.
         public async Task<ActionResult> Post([FromBody] Command command)
         {
             Result res = await flightGearClient.Execute(command);
@@ -52,6 +48,7 @@ namespace FlightMobileAppServer.Controllers
             {
                 return NotFound();
             }
+            // Result.NotOk
             return BadRequest();
         }
 

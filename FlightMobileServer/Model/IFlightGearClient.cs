@@ -12,8 +12,5 @@ namespace FlightMobileServer.Model
         void ProcessCommand();
         void Start();
         Task<byte[]> SendRequest();
-
-
-
     }
 }
