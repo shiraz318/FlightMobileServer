@@ -1,8 +1,8 @@
 ﻿using FlightMobileAppServer.Model;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
@@ -20,6 +20,7 @@ namespace FlightMobileServer.Model
         private readonly BlockingCollection<AsyncCommand> queue;
         private readonly TcpClient client;
         private NetworkStream stream;
+        private ServerData serverData;
 
         public string Error { get; set; }
         public string TimeOutError { get; set; }
@@ -30,10 +31,11 @@ namespace FlightMobileServer.Model
         private const string Rudder = "rudder";
         private bool isConnected = false;
 
-        public FlightGearClient()
+        public FlightGearClient(IOptions<ServerData> o)
         {
             queue = new BlockingCollection<AsyncCommand>();
             client = new TcpClient();
+            serverData = o.Value;
             pathMap.Add(Aileron, "/controls/flight/aileron");
             pathMap.Add(Throttle, "/controls/engines/current-engine/throttle");
             pathMap.Add(Rudder, "/controls/flight/rudder");
@@ -61,9 +63,9 @@ namespace FlightMobileServer.Model
             try
             {
                 //dummy server.
-                client.Connect("127.0.0.1", 5403);
-                // flight gear.
-                // client.Connect("127.0.0.1", 5402);
+                string ip = serverData.Ip;
+                int port = serverData.Port;
+                client.Connect(ip, port);
             }catch(Exception)
             {
                 isConnected = false;
@@ -186,7 +188,6 @@ namespace FlightMobileServer.Model
             string valueElevator = command.Command.Elevator.ToString();
             string valueAileron = command.Command.Aileron.ToString();
 
-            //string message = "set " + path + " " + value.ToString() + "\n";
             string Aileronmessage = "set " + pathAileron + " " + valueAileron + "\n";
             string Elevatormessage = "set " + pathElevator + " " + valueElevator + "\n";
             string Ruddermessage = "set " + pathRudder + " " + valueRudder + "\n";
@@ -249,11 +250,12 @@ namespace FlightMobileServer.Model
                 }
             }
         }
-        public async Task<byte[]> SendRequest(string url)
+        public async Task<byte[]> SendRequest()
         {
             try
             {
-                string command = url + "/screenshot";
+                string http = serverData.HttpAddress;
+                string command = http + "/screenshot";
                 using var client = new HttpClient();
                 TimeSpan timeout = new TimeSpan(0, 0, 0, 10);
                 client.Timeout = timeout;

@@ -16,25 +16,24 @@ namespace FlightMobileAppServer.Controllers
     [ApiController]
     public class CommandController : ControllerBase
     {
-        private IManager manager;
+       
         private IFlightGearClient flightGearClient;
 
         public CommandController(IFlightGearClient flightGearClient)
         {
-           // this.manager = manager;
             this.flightGearClient = flightGearClient;
         }
 
         // GET: screenshot
         [Route("screenshot")]
         [HttpGet]
-        public async Task<FileContentResult> Get()
+        public async Task<IActionResult> Get()
         {
-            byte[] returnValue = await flightGearClient.SendRequest("http://localhost:5000");
+            byte[] returnValue = await flightGearClient.SendRequest();
             // Error accured
             if (returnValue == null)
             {
-                return null;
+                return NotFound();
             }
             return File(returnValue, "image/jpg");
         }
@@ -54,14 +53,6 @@ namespace FlightMobileAppServer.Controllers
                 return NotFound();
             }
             return BadRequest();
-        }
-
-        // POST: disconnect
-        [Route("disconnect")]
-        [HttpPost]
-        public void Disconnect()
-        {
-            manager.Disconnect();
         }
 
     }

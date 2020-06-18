@@ -31,6 +31,7 @@ namespace FlightMobileAppServer
             services.AddControllers();
             services.AddSingleton<IManager, Manager>();
             services.AddSingleton<IFlightGearClient, FlightGearClient>();
+            services.Configure<ServerData>(Configuration.GetSection("ServerData"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

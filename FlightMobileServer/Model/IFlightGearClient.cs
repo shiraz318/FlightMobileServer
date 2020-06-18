@@ -11,7 +11,7 @@ namespace FlightMobileServer.Model
         Task<Result> Execute(Command command);
         void ProcessCommand();
         void Start();
-       Task<byte[]> SendRequest(string url);
+        Task<byte[]> SendRequest();
 
 
 
