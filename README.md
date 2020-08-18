@@ -1,5 +1,5 @@
 # FlightMobileServer
-## OverView
+## Overview
 In this project we created an ןntermediary server that mediates between an anroid app and a flight simulator.  
 The app sends a commend, and the server passes the command to the simulator.  
 In the same way, the server reads information from the simulator and passes it to the app.  
@@ -11,7 +11,7 @@ In the same way, the server reads information from the simulator and passes it t
 4. Double click the build_and_run file.
 
 #### Versioning  
-We used [Github](https://github.com/shiraz318/Flight_Simulator) for version control
+We used [Github](https://github.com/shiraz318/FlightMobileServer) for version control
 
 #### Authors
 Nili Cohen and Shiraz Berger.
