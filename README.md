@@ -6,8 +6,8 @@ In the same way, the server reads information from the simulator and passes it t
 
 ## How to use  
 1. Place the files in a zip folder called "FlightMobile".  
-2. Locate the dummy_server and build_and_run files and the screenshot_server folder in the same location as the zip folder.  
-3. Double click the dummy_server, and the screenshot_server/app.  
+2. Locate the dummy_server and build_and_run files and the screenshot_server zip folder in the same location as the zip folder above.  
+3. Double click the dummy_server, and the unzip the screenshot_server, and double click screenshot_server/app file.  
 4. Double click the build_and_run file.
 
 #### Versioning  
