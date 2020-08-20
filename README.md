@@ -1,6 +1,6 @@
 # FlightMobileServer
 ## Overview
-In this project we created an ןntermediary server that mediates between an anroid app and a flight simulator.  
+In this project we created an intermediary server that mediates between an anroid app and a flight simulator.  
 The app sends a commend, and the server passes the command to the simulator.  
 In the same way, the server reads information from the simulator and passes it to the app.  
 
