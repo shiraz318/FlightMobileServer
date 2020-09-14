@@ -33,7 +33,7 @@ namespace FlightMobileServer.Model
         private NetworkStream stream;
         private ServerData serverData;
         private bool isConnected = false;
-        private Dictionary<string, string> pathMap = new Dictionary<string, string>();
+        private Dictionary<string, string> pathMap;
 
         // Properties.
         public string Error { get; set; }
@@ -42,6 +42,7 @@ namespace FlightMobileServer.Model
         // Constractor.
         public FlightGearClient(IOptions<ServerData> o)
         {
+            pathMap = new Dictionary<string, string>();
             queue = new BlockingCollection<AsyncCommand>();
             client = new TcpClient();
             serverData = o.Value;
@@ -93,10 +94,8 @@ namespace FlightMobileServer.Model
         public void ProcessCommand()
         {
             ConnectToSimulator();
-            if (!isConnected)
-            {
-                return;
-            }
+            if (!isConnected) return;
+
             // To get the information in numbers.
             Write("data\n");
             // Go through the commands in the queue
@@ -104,7 +103,7 @@ namespace FlightMobileServer.Model
             {
                 string setMessage = CreateSetMessage(command);
                 Result resWrite = Write(setMessage);
-                // Error accured while whriting to the simulator.
+                // Error accured while writing to the simulator.
                 if (resWrite.Equals(Result.Error))
                 {
                     command.Completion.SetResult(resWrite);
@@ -149,31 +148,23 @@ namespace FlightMobileServer.Model
             if (Double.TryParse(actualValues[AileronE], out double actualAileron))
             {
                 command.Aileron = actualAileron;
-            } else
-            {
-                return null;
-            }
+            } else return null;
+
             if (Double.TryParse(actualValues[ElevatorE], out double actualElevator))
             {
                 command.Elevator = actualElevator;
-            } else
-            {
-                return null;
-            }
+            } else return null;
+
             if (Double.TryParse(actualValues[RudderE], out double actualRudder))
             {
                 command.Rudder = actualRudder;
-            } else
-            {
-                return null;
-            }
+            } else return null;
+
             if (Double.TryParse(actualValues[ThrottleE], out double actualThrottle))
             {
                 command.Throttle = actualThrottle;
-            } else
-            {
-                return null;
-            }
+            } else return null;
+
             return command;
         }
 
@@ -186,15 +177,11 @@ namespace FlightMobileServer.Model
             double expectedThrottle = command.Throttle;
             // Separate returnValue by '\n'
             string[] actualValues = returnValue.Split('\n'); 
-            if (actualValues.Length != 5)
-            {
-                return Result.NotOk;
-            }
+            if (actualValues.Length != 5) return Result.NotOk;
+
             Command actualCommand = setActualCommand(actualValues);
-            if (actualCommand == null)
-            {
-                return Result.NotOk;
-            }
+            if (actualCommand == null) return Result.NotOk;
+
             // If at least one value is different from the expected value - this is not ok.
             if (!actualCommand.Aileron.Equals(expectedAileron)
                 || !actualCommand.Elevator.Equals(expectedElevator)
@@ -246,9 +233,8 @@ namespace FlightMobileServer.Model
                 return Result.Ok;
             }
             // Connection error.
-            catch (Exception e)
+            catch (Exception)
             {
-                string messageerror = e.Message;
                 Error = ConnectionFaultedErrorMessage;
                 return Result.Error;
             }
@@ -300,9 +286,8 @@ namespace FlightMobileServer.Model
                 return content;
             }
             // Server did not responsed in 10 seconds.
-            catch (Exception t)
+            catch (Exception)
             {
-                string g = t.Message;
                 return null;
             }
 

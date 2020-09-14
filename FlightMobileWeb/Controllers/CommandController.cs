@@ -25,12 +25,9 @@ namespace FlightMobileAppServer.Controllers
         public async Task<IActionResult> Get()
         {
             byte[] returnValue = await flightGearClient.SendRequest();
-            // Error accured
-            if (returnValue == null)
-            {
-                return NotFound();
-            }
-            return File(returnValue, "image/jpg");
+            // Error accured - return NotFound.
+            return (returnValue == null) ? NotFound() : File(returnValue, "image/jpg");
+
         }
 
         // POST: api/Command
@@ -40,14 +37,10 @@ namespace FlightMobileAppServer.Controllers
         public async Task<ActionResult> Post([FromBody] Command command)
         {
             Result res = await flightGearClient.Execute(command);
-            if (res.Equals(Result.Ok))
-            {
-                return Ok();
-            }
-            if (res.Equals(Result.Error))
-            {
-                return NotFound();
-            }
+
+            if (res.Equals(Result.Ok)) return Ok();
+            if (res.Equals(Result.Error)) return NotFound();
+
             // Result.NotOk
             return BadRequest();
         }
