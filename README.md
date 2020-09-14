@@ -5,8 +5,8 @@ The app sends a commend, and the server passes the command to the simulator.
 In the same way, the server reads information from the simulator and passes it to the app.  
 
 ## How to use  
-1. Place the files in a zip folder called "FlightMobile".  
-2. Locate the dummy_server and build_and_run files and the screenshot_server zip folder in the same location as the zip folder above.  
+1. Place the files in a folder called "FlightMobile".  
+2. Locate the dummy_server and build_and_run files and the screenshot_server zip folder inside FlightMobile folder.  
 3. Double click the dummy_server, and the unzip the screenshot_server, and double click screenshot_server/app file.  
 4. Double click the build_and_run file.
 
