@@ -25,8 +25,12 @@ namespace FlightMobileAppServer.Controllers
         public async Task<IActionResult> Get()
         {
             byte[] returnValue = await flightGearClient.SendRequest();
-            // Error accured - return NotFound.
-            return (returnValue == null) ? NotFound() : File(returnValue, "image/jpg");
+            // Error accured
+            if (returnValue == null)
+            {
+                return NotFound();
+            }
+            return File(returnValue, "image/jpg");
 
         }
 
